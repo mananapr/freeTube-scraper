@@ -49,11 +49,38 @@ def urlinfo():
 
 """
     INPUT: {'url':<url>}
-    OUTPUT: [videoUrl, duration, title, thumbnail, views]
+    OUTPUT: [videoUrl, duration, title, thumbnail, views, date]
 """
 @app.route('/api/v1/channelinfo', methods=['POST'])
 def channelinfo():
-    ans = {'views':'1'}
+    data = request.json
+    channelUrl = data['url'] + '/videos'
+    response = requests.get(channelUrl)
+    soup = bs4.BeautifulSoup(response.text, 'html.parser')
+
+    titleSoups = soup.findAll('h3', {'class':'yt-lockup-title'})
+    thumbSoups = soup.findAll('img', {'aria-hidden':'true', 'width':'196'})
+    viewsSoups = soup.findAll('ul', {'class':'yt-lockup-meta-info'})
+    urlSoups = soup.findAll('a', {'class':'yt-uix-sessionlink yt-uix-tile-link spf-link yt-ui-ellipsis yt-ui-ellipsis-2'})
+
+    videos = []
+    vidCount = len(titleSoups)
+    for i in range(vidCount):
+        video = {}
+
+        title_duration = titleSoups[i].text.split('Duration')
+        video['title'] = title_duration[0][:-3]
+        video['duration'] = title_duration[1][2:-1]
+        video['thumbnail'] = thumbSoups[i]['src'].split('?')[0]
+        views_date = viewsSoups[i].text.split('views')
+        video['views'] = views_date[0] + 'views'
+        video['date'] = views_date[1]
+        video['url'] = 'https://youtube.com' + urlSoups[i]['href']
+
+        videos.append(video)
+
+    ans = {}
+    ans['videos'] = videos
     return jsonify(ans)
 
 """
@@ -62,6 +89,10 @@ def channelinfo():
 """
 @app.route('/api/v1/search', methods=['POST'])
 def search():
+    data = request.json
+    query = data['query']
+    finalQuery = '+'.join(query.split(' '))
+    search_url = "https://www.youtube.com/results?search_query=" + finalQuery
     ans = {'views':'1'}
     return jsonify(ans)
 
