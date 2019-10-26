@@ -6,8 +6,8 @@ from flask import jsonify, request
 
 """
     INPUT: {'url':<url>}
-    OUTPUT: [directUrl, likes, dislikes, date-uploaded,
-             views, channel, subscriber-count]
+    OUTPUT: [directUrl, title, likes, dislikes, date-uploaded,
+             views, channel-link, channel-name, subscriber-count]
 """
 @app.route('/api/v1/urlinfo', methods=['POST'])
 def urlinfo():
@@ -85,21 +85,86 @@ def channelinfo():
 
 """
     INPUT: {'query':<search_query>}
-    OUTPUT: [videoUrl, duration, title, thumbnail, views]
+    OUTPUT: [videoUrl, duration, title, thumbnail, views, date]
 """
 @app.route('/api/v1/search', methods=['POST'])
 def search():
+    page = request.args.get('page', default=1, type=int)
     data = request.json
     query = data['query']
     finalQuery = '+'.join(query.split(' '))
-    search_url = "https://www.youtube.com/results?search_query=" + finalQuery
-    ans = {'views':'1'}
+    search_url = "https://www.youtube.com/results?search_query=" + finalQuery + "&page=" + str(page)
+    response = requests.get(search_url)
+    soup = bs4.BeautifulSoup(response.text, 'html.parser')
+    
+    titleSoups = soup.findAll('h3', {'class':'yt-lockup-title'})
+    thumbSoups = soup.findAll('img', {'height':'138', 'width':'246'})
+    urlSoups = soup.findAll('a', {'class':'yt-uix-tile-link yt-ui-ellipsis yt-ui-ellipsis-2 yt-uix-sessionlink spf-link'})
+    dateViewsSoups = soup.findAll('ul', {'class':'yt-lockup-meta-info'})
+
+    videos = []
+    vidCount = len(urlSoups)
+    for i in range(vidCount):
+        video = {}
+
+        try:
+            title = urlSoups[i]['title']
+            title_duration = titleSoups[i].text.split('Duration: ')
+            duration = title_duration[1][:-1]
+            video['duration'] = duration
+            video['title'] = title
+            video['url'] = 'https://youtube.com' + urlSoups[i]['href']
+            video['thumbnail'] = thumbSoups[i]['data-thumb'].split('?')[0]
+            date_views = dateViewsSoups[i].text.split('ago')
+            video['date'] = date_views[0] + 'ago'
+            video['views'] = date_views[1]
+
+            videos.append(video)
+
+        except Exception as e:
+            pass
+
+    #channels = []
+    ans = {}
+    ans['videos'] = videos
+    #ans['channels'] = channels
     return jsonify(ans)
 
 """
-    OUTPUT: [videoUrl, duration, title, thumbnail, views]
+    OUTPUT: [videoUrl, duration, title, thumbnail, date, views]
 """
-@app.route('/api/v1/hot', methods=['GET'])
-def hot():
-    ans = {'views':'1'}
+@app.route('/api/v1/explore', methods=['GET'])
+def explore():
+    url = "https://www.youtube.com"
+    page = requests.get(url)
+    soup = bs4.BeautifulSoup(page.text, "html.parser")
+
+    titleSoups = soup.findAll('h3', {'class':'yt-lockup-title'})
+    thumbSoups = soup.findAll('img', {'height':'110', 'width':'196'})
+    urlSoups = soup.findAll('a', {'class':'yt-ui-ellipsis yt-ui-ellipsis-2 yt-uix-sessionlink spf-link'})
+    dateViewsSoups = soup.findAll('ul', {'class':'yt-lockup-meta-info'})
+
+    videos = []
+    vidCount = len(urlSoups)
+    for i in range(vidCount):
+        video = {}
+
+        try:
+            title = urlSoups[i]['title']
+            title_duration = titleSoups[i].text.split('Duration: ')
+            duration = title_duration[1][:-1]
+            video['duration'] = duration
+            video['title'] = title
+            video['url'] = 'https://youtube.com' + urlSoups[i]['href']
+            video['thumbnail'] = thumbSoups[i]['data-thumb'].split('?')[0]
+            date_views = dateViewsSoups[i].text.split(' views')
+            video['date'] = date_views[1]
+            video['views'] = date_views[0] + ' views'
+
+            videos.append(video)
+
+        except Exception as e:
+            pass
+
+    ans = {'videos':videos}
     return jsonify(ans)
