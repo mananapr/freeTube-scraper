@@ -150,6 +150,11 @@ def explore():
     thumbSoups = soup.findAll('img', {'height':'110', 'width':'196'})
     urlSoups = soup.findAll('a', {'class':'yt-ui-ellipsis yt-ui-ellipsis-2 yt-uix-sessionlink spf-link'})
     dateViewsSoups = soup.findAll('ul', {'class':'yt-lockup-meta-info'})
+    channelSoup_divs = soup.findAll('div', {'class':'yt-lockup-byline'})
+    channelSoup = []
+    for x in channelSoup_divs:
+        tempSoup = x.find_all('a', {'class':'yt-uix-sessionlink spf-link'})
+        channelSoup = channelSoup + tempSoup
 
     videos = []
     vidCount = len(urlSoups)
@@ -167,6 +172,8 @@ def explore():
             date_views = dateViewsSoups[i].text.split(' views')
             video['date'] = date_views[1]
             video['views'] = date_views[0] + ' views'
+            video['channelTitle'] = channelSoup[i].text
+            video['channelUrl'] = channelSoup[i]['href']
 
             videos.append(video)
 
