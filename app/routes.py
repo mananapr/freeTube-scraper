@@ -28,7 +28,7 @@ def urlinfo():
     views = viewCount_soup[0].text
     subCount = subCount_soup[0]['aria-label']
     channelName = channel_soup[0].text
-    channelLink = 'https://youtube.com' + channel_soup[0]['href']
+    channelLink = channel_soup[0]['href']
     date = date_soup[0].text
     likes = likes_soup[0].text
     dislikes = dislikes_soup[0].text
@@ -75,7 +75,7 @@ def channelinfo():
         views_date = viewsSoups[i].text.split('views')
         video['views'] = views_date[0] + 'views'
         video['date'] = views_date[1]
-        video['url'] = 'https://youtube.com' + urlSoups[i]['href']
+        video['url'] = urlSoups[i]['href']
 
         videos.append(video)
 
@@ -101,6 +101,11 @@ def search():
     thumbSoups = soup.findAll('img', {'height':'138', 'width':'246'})
     urlSoups = soup.findAll('a', {'class':'yt-uix-tile-link yt-ui-ellipsis yt-ui-ellipsis-2 yt-uix-sessionlink spf-link'})
     dateViewsSoups = soup.findAll('ul', {'class':'yt-lockup-meta-info'})
+    channelSoup_divs = soup.findAll('div', {'class':'yt-lockup-byline'})
+    channelSoup = []
+    for x in channelSoup_divs:
+        tempSoup = x.find_all('a', {'class':'yt-uix-sessionlink spf-link'})
+        channelSoup = channelSoup + tempSoup
 
     videos = []
     vidCount = len(urlSoups)
@@ -113,11 +118,13 @@ def search():
             duration = title_duration[1][:-1]
             video['duration'] = duration
             video['title'] = title
-            video['url'] = 'https://youtube.com' + urlSoups[i]['href']
+            video['url'] =  urlSoups[i]['href']
             video['thumbnail'] = thumbSoups[i]['data-thumb'].split('?')[0]
             date_views = dateViewsSoups[i].text.split('ago')
             video['date'] = date_views[0] + 'ago'
             video['views'] = date_views[1]
+            video['channelTitle'] = channelSoup[i].text
+            video['channelUrl'] = channelSoup[i]['href']
 
             videos.append(video)
 
@@ -155,7 +162,7 @@ def explore():
             duration = title_duration[1][:-1]
             video['duration'] = duration
             video['title'] = title
-            video['url'] = 'https://youtube.com' + urlSoups[i]['href']
+            video['url'] = urlSoups[i]['href']
             video['thumbnail'] = thumbSoups[i]['data-thumb'].split('?')[0]
             date_views = dateViewsSoups[i].text.split(' views')
             video['date'] = date_views[1]
