@@ -62,6 +62,8 @@ def channelinfo():
     thumbSoups = soup.findAll('img', {'aria-hidden':'true', 'width':'196'})
     viewsSoups = soup.findAll('ul', {'class':'yt-lockup-meta-info'})
     urlSoups = soup.findAll('a', {'class':'yt-uix-sessionlink yt-uix-tile-link spf-link yt-ui-ellipsis yt-ui-ellipsis-2'})
+    channelNameSoup = soup.find('title')
+    channelSubCountSoup = soup.find('span', {'class':'yt-subscription-button-subscriber-count-branded-horizontal subscribed yt-uix-tooltip'})
 
     videos = []
     vidCount = len(titleSoups)
@@ -80,6 +82,8 @@ def channelinfo():
         videos.append(video)
 
     ans = {}
+    ans['channelName'] = channelNameSoup.text.split(" - ")[0]
+    ans['channelSubCount'] = channelSubCountSoup['aria-label'].split(" ")[0]
     ans['videos'] = videos
     return jsonify(ans)
 
