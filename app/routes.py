@@ -6,8 +6,8 @@ from flask import jsonify, request
 
 """
     INPUT: {'url':<url>}
-    OUTPUT: [directUrl, title, likes, dislikes, date-uploaded,
-             views, channel-link, channel-name, subscriber-count]
+    OUTPUT: [directUrl, title, likes, dislikes, date,
+             views, channelLink, channelName, subCount]
 """
 @app.route('/api/v1/urlinfo', methods=['POST'])
 def urlinfo():
@@ -49,7 +49,8 @@ def urlinfo():
 
 """
     INPUT: {'url':<url>}
-    OUTPUT: [videoUrl, duration, title, thumbnail, views, date]
+    OUTPUT: [videoUrl, duration, title, thumbnail, views, date
+             channelName, channelSubCount]
 """
 @app.route('/api/v1/channelinfo', methods=['POST'])
 def channelinfo():
@@ -89,7 +90,8 @@ def channelinfo():
 
 """
     INPUT: {'query':<search_query>}
-    OUTPUT: [videoUrl, duration, title, thumbnail, views, date]
+    OUTPUT: [videoUrl, duration, title, thumbnail, views, date,
+             channelTitle, channelUrl]
 """
 @app.route('/api/v1/search', methods=['POST'])
 def search():
@@ -142,7 +144,8 @@ def search():
     return jsonify(ans)
 
 """
-    OUTPUT: [videoUrl, duration, title, thumbnail, date, views]
+    OUTPUT: [videoUrl, duration, title, thumbnail, date, views,
+             channelTitle, channelUrl]
 """
 @app.route('/api/v1/explore', methods=['GET'])
 def explore():
