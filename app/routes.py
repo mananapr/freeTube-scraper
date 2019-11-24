@@ -149,7 +149,7 @@ def search():
 """
 @app.route('/api/v1/explore', methods=['GET'])
 def explore():
-    url = "https://www.youtube.com"
+    url = "https://www.youtube.com/?gl=US"
     page = requests.get(url)
     soup = bs4.BeautifulSoup(page.text, "html.parser")
 
